@@ -4,7 +4,18 @@
     </IfModule>
 
     RewriteEngine On
-    RewriteRule ^$ /public [L]
+ 
+    RewriteBase /
+
+    RewriteCond %{REQUEST_URI} !^/public/
+
+    # Rewrites all URLS [Replace "domain" with the actual domain, without the TLD (.com, .net, .biz, etc)]
+#   RewriteCond %{HTTP_HOST} ^(www\.)?domain\.
+
+    # Rewrite all those to insert /folder
+    RewriteRule ^(.*)$ /public/$1 [L]
+
+
     # Redirect Trailing Slashes...
     #RewriteRule ^(.*)/$ /$1 [L,R=301]
 
