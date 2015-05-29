@@ -20,3 +20,6 @@ if [ -f composer.json ]; then
 	   echo -e "\nConsider adding a composer.lock file into your source repository\n"
     fi
 fi
+
+echo "Migrating DB"
+php artisan migrate
