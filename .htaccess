@@ -3,27 +3,7 @@
         Options -MultiViews
     </IfModule>
 
-    RewriteEngine On
- 
-    RewriteBase /
-
+    RewriteEngine on
     RewriteCond %{REQUEST_URI} !^/public/
-
-    # Rewrites all URLS [Replace "domain" with the actual domain, without the TLD (.com, .net, .biz, etc)]
-#   RewriteCond %{HTTP_HOST} ^(www\.)?domain\.
-
-    # Rewrite all those to insert /folder
-    RewriteRule ^(.*)$ /public/$1 [L]
-
-
-    # Redirect Trailing Slashes...
-    #RewriteRule ^(.*)/$ /$1 [L,R=301]
-
-    # Handle Front Controller...
-    #RewriteCond %{REQUEST_FILENAME} !-d
-    #RewriteCond %{REQUEST_FILENAME} !-f
-    #RewriteRule ^ public/index.php [L]
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteRule ^ public/index.php [L]
+    RewriteRule (.*) /public/$1
 </IfModule>
