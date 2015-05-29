@@ -21,5 +21,3 @@ if [ -f composer.json ]; then
     fi
 fi
 
-echo "Migrating DB"
-php artisan migrate
