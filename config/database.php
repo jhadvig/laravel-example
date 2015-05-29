@@ -50,7 +50,7 @@ return [
 	'connections' => [
 		'mysql' => [
 			'driver'    => 'mysql',
-			'host'      => env('DATABASE_SERVICE_HOST', '172.17.44.1'),
+			'host'      => env('DATABASE_SERVICE_HOST', '172.17.42.1'),
 			'port'      => env('DATABASE_SERVICE_PORT', 3306)),
 			'database'  => env('DATABASE_NAME', 'db')),
 			'username'  => env('DATABASE_USER', 'user')),
