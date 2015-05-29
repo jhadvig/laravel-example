@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 # For SCL enablement
 source ./.bashrc
@@ -22,4 +22,6 @@ envsubst < /opt/openshift/etc/php.ini.template > /opt/rh/php55/root/etc/php.ini
 envsubst < /opt/openshift/etc/php.d/opcache.ini.template > /opt/rh/php55/root/etc/php.d/opcache.ini
 
 set -e
+
+echo "Starting apache"
 exec httpd -D FOREGROUND
