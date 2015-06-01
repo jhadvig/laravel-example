@@ -1,11 +1,16 @@
 @extends('layouts.master')
  
 @section('content')
-
+ 
+<h1>Editing "{{ $task->title }}"</h1>
+<p class="lead">Edit and save this task below, or <a href="{{ route('tasks.index') }}">go back to all tasks.</a></p>
+<hr>
+ 
 @include('partials.alerts.errors')
-
-{!! Form::open([
-    'route' => 'tasks.store'
+ 
+{!! Form::model($task, [
+    'method' => 'PATCH',
+    'route' => ['tasks.update', $task->id]
 ]) !!}
  
 <div class="form-group">
@@ -18,8 +23,8 @@
     {!! Form::textarea('description', null, ['class' => 'form-control']) !!}
 </div>
  
-{!! Form::submit('Create New Task', ['class' => 'btn btn-primary']) !!}
+{!! Form::submit('Update Task', ['class' => 'btn btn-primary']) !!}
  
 {!! Form::close() !!}
-
+ 
 @stop
