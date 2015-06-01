@@ -23,7 +23,7 @@ envsubst < /opt/openshift/etc/php.d/opcache.ini.template > /opt/rh/php55/root/et
 
 set -e
 
-echo "Migrating DB"
+echo "Migrating DB ..."
 php artisan migrate
 
 
