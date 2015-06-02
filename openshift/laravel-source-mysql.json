@@ -1,0 +1,325 @@
+{
+  "kind": "Template",
+  "apiVersion": "v1",
+  "metadata": {
+    "name": "laravel-quickstart-source-mysql",
+    "annotations": {
+      "description": "Laravel 5 application template that uses the Source build strategy and includes a MySQL database server for storage.",
+      "tags": "instant-app,php,laravel,mysql",
+      "iconClass" : "icon-php"
+    }
+  },
+  "labels": {
+    "template": "laravel-quickstart-source-mysql"
+  },
+  "objects": [
+    {
+      "kind": "Service",
+      "apiVersion": "v1",
+      "metadata": {
+        "name": "${FRONTEND_SERVICE_NAME}",
+        "annotations": {
+          "description": "Exposes and load balances the Laravel app instances."
+        }
+      },
+      "spec": {
+        "ports": [
+          {
+            "name": "web",
+            "port": 8080,
+            "targetPort": 8080
+          }
+        ],
+        "selector": {
+          "name": "${FRONTEND_SERVICE_NAME}"
+        }
+      }
+    },
+    {
+      "kind": "Service",
+      "apiVersion": "v1",
+      "metadata": {
+        "name": "${DATABASE_SERVICE_NAME}",
+        "annotations": {
+          "description": "Exposes the MySQL database server."
+        }
+      },
+      "spec": {
+        "ports": [
+          {
+            "name": "mysql",
+            "port": 3306,
+            "targetPort": 3306
+          }
+        ],
+        "selector": {
+          "name": "${DATABASE_SERVICE_NAME}"
+        }
+      }
+    },
+    {
+      "kind": "BuildConfig",
+      "apiVersion": "v1",
+      "metadata": {
+        "name": "laravel-quickstart",
+        "annotations": {
+          "description": "Defines how to build the Laravel app."
+        }
+      },
+      "spec": {
+        "source": {
+          "type": "Git",
+          "git": {
+            "uri": "${GIT_REPOSITORY}"
+          },
+          "contextDir": "${CONTEXT_DIR}"
+        },
+        "strategy": {
+          "type": "Source",
+          "sourceStrategy": {
+            "from": {
+              "kind": "ImageStream",
+              "name": "php-55-centos7"
+            }
+          }
+        },
+        "output": {
+          "to": {
+            "kind": "ImageStream",
+            "name": "laravel-quickstart-source"
+          }
+        },
+        "triggers": [
+          {
+            "type": "imageChange"
+          },
+          {
+            "type": "github",
+            "github": {
+              "secret": "secret123"
+            }
+          },
+          {
+            "type": "generic",
+            "generic": {
+              "secret": "secret123"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "kind": "DeploymentConfig",
+      "apiVersion": "v1",
+      "metadata": {
+        "name": "${FRONTEND_SERVICE_NAME}",
+        "annotations": {
+          "description": "Defines how to deploy the Laravel app."
+        }
+      },
+      "spec": {
+        "strategy": {
+          "type": "Rolling"
+        },
+        "triggers": [
+          {
+            "type": "ImageChange",
+            "imageChangeParams": {
+              "automatic": true,
+              "containerNames": [
+                "laravel-quickstart"
+              ],
+              "from": {
+                "name": "laravel-quickstart:latest"
+              }
+            }
+          },
+          {
+            "type": "ConfigChange"
+          }
+        ],
+        "replicas": 1,
+        "selector": {
+          "name": "${FRONTEND_SERVICE_NAME}"
+        },
+        "template": {
+          "metadata": {
+            "name": "${FRONTEND_SERVICE_NAME}",
+            "labels": {
+              "name": "${FRONTEND_SERVICE_NAME}"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "name": "laravel-quickstart",
+                "image": "laravel-quickstart-source",
+                "ports": [
+                  {
+                    "containerPort": 8080
+                  }
+                ],
+                "env": [
+                  {
+                    "name": "DATABASE_SERVICE_NAME",
+                    "value": "${DATABASE_SERVICE_NAME}"
+                  },
+                  {
+                    "name": "DATABASE_ENGINE",
+                    "value": "${DATABASE_ENGINE}"
+                  },
+                  {
+                    "name": "DATABASE_NAME",
+                    "value": "${DATABASE_NAME}"
+                  },
+                  {
+                    "name": "DATABASE_USER",
+                    "value": "${DATABASE_USER}"
+                  },
+                  {
+                    "name": "DATABASE_PASSWORD",
+                    "value": "${DATABASE_PASSWORD}"
+                  },
+                  {
+                    "name": "APP_MODULE",
+                    "value": "${APP_MODULE}"
+                  },
+                  {
+                    "name": "APP_CONFIG",
+                    "value": "${APP_CONFIG}"
+                  },
+                  {
+                    "name": "LARAVEL_SECRET_KEY",
+                    "value": "${LARAVEL_SECRET_KEY}"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "kind": "DeploymentConfig",
+      "apiVersion": "v1",
+      "metadata": {
+        "name": "${DATABASE_SERVICE_NAME}",
+        "labels": {
+          "name": "${DATABASE_SERVICE_NAME}"
+        },
+        "annotations": {
+          "description": "Defines how to deploy the database."
+        }
+      },
+      "spec": {
+        "strategy": {
+          "type": "Recreate"
+        },
+        "triggers": [
+          {
+            "type": "ConfigChange"
+          }
+        ],
+        "replicas": 1,
+        "selector": {
+          "name": "${DATABASE_SERVICE_NAME}"
+        },
+        "template": {
+          "metadata": {
+            "name": "${DATABASE_SERVICE_NAME}",
+            "labels": {
+              "name": "${DATABASE_SERVICE_NAME}"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "name": "mysql",
+                "image": "openshift/mysql-55-centos7",
+                "ports": [
+                  {
+                    "containerPort": 3306
+                  }
+                ],
+                "env": [
+                  {
+                    "name": "MYSQL_USER",
+                    "value": "${DATABASE_USER}"
+                  },
+                  {
+                    "name": "MYSQL_PASSWORD",
+                    "value": "${DATABASE_PASSWORD}"
+                  },
+                  {
+                    "name": "MYSQL_DATABASE",
+                    "value": "${DATABASE_NAME}"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "kind": "ImageStream",
+      "apiVersion": "v1",
+      "metadata": {
+        "name": "laravel-quickstart-source",
+        "annotations": {
+          "description": "Keeps track of changes in the Laravel app image."
+        }
+      }
+    },
+    {
+      "kind": "ImageStream",
+      "apiVersion": "v1",
+      "metadata": {
+        "name": "php-55-centos7",
+        "annotations": {
+          "description": "Keeps track of changes in the PHP base image."
+        }
+      },
+      "spec": {
+        "dockerImageRepository": "openshift/php-55-centos7"
+      }
+    }
+  ],
+  "parameters": [
+    {
+      "name": "GIT_REPOSITORY",
+      "description": "Change this to match your project's Git repository",
+      "value": "git://github.com/jhadvig/laravel-example.git"
+    },
+    {
+      "name": "CONTEXT_DIR",
+      "description": "Set this to the relative path to your project if it is not in the root of your repository"
+    },
+    {
+      "name": "FRONTEND_SERVICE_NAME",
+      "description": "Frontend service name",
+      "value": "laravel"
+    },
+    {
+      "name": "DATABASE_SERVICE_NAME",
+      "description": "Database service name (MySQL)",
+      "value": "database"
+    },
+    {
+      "name": "DATABASE_NAME",
+      "description": "Database name",
+      "value": "default"
+    },
+    {
+      "name": "DATABASE_USER",
+      "description": "Database user name",
+      "value": "laravel"
+    },
+    {
+      "name": "DATABASE_PASSWORD",
+      "description": "Database user password",
+      "generate": "expression",
+      "from": "[a-zA-Z0-9]{16}"
+    }
+  ]
+}
