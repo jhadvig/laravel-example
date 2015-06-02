@@ -130,7 +130,7 @@
                 "laravel-quickstart"
               ],
               "from": {
-                "name": "laravel-quickstart:latest"
+                "name": "laravel-quickstart-source:latest"
               }
             }
           },
@@ -179,18 +179,6 @@
                   {
                     "name": "DATABASE_PASSWORD",
                     "value": "${DATABASE_PASSWORD}"
-                  },
-                  {
-                    "name": "APP_MODULE",
-                    "value": "${APP_MODULE}"
-                  },
-                  {
-                    "name": "APP_CONFIG",
-                    "value": "${APP_CONFIG}"
-                  },
-                  {
-                    "name": "LARAVEL_SECRET_KEY",
-                    "value": "${LARAVEL_SECRET_KEY}"
                   }
                 ]
               }
