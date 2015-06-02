@@ -4,7 +4,7 @@ source ./.bashrc
 
 set -e
 
-echo "---> Installing application source"
+echo "---> Installing Laravel 5 application source"
 cp -Rf /tmp/src/. ./
 
 if [ -f composer.json ]; then
