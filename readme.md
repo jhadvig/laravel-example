@@ -1,97 +1,144 @@
-# Laravel 5.0 on OpenShift #
-[Laravel](http://laravel.com/) is a free, open source PHP web application framework, 
-designed for the development of model–view–controller (MVC) web applications.
+# Openshift quickstart: Laravel
 
-This QuickStart was created to make it easy to get started with Laravel 5.0 on
-OpenShift.
+This is a [Laravel](http://laravel.com/) project that you can use as the starting point to develop your own and deploy it on an [OpenShift](https://github.com/openshift/origin) cluster.
 
-The simplest way to install this application is to use the [OpenShift
-QuickStart](https://hub.openshift.com/quickstarts/115-laravel-5-0). If 
-you'd like to install it manually, follow [these directions](#manual-installation).
+It assumes you have access to an existing OpenShift installation.
 
-## OpenShift Considerations ##
-These are some special considerations you may need to keep in mind when
-running your application on OpenShift.
 
-### Local vs. Remote Development ###
-This Laravel QuickStart provides separate `.env` configuration files for both local and 
-remote development, found at `.env` and `.openshift/.env` respectively. When the local 
-repo is pushed to OpenShift `.env` is overwritten with the `.openshift/.env` file.
+## What has been done for you
 
-### Remote Development ###
-Your application is configured to automatically use your OpenShift MySQL or PostgreSQL 
-database in when deployed on OpenShift using [OpenShift Environment Variables](https://developers.openshift.com/en/managing-environment-variables.html).
+This is a minimal Laravel project. It was created with these steps:
 
-Additionally, your `APP_ENV`, `APP_URL`, and `APP_KEY` will be set automatically in 
-production on OpenShift.
+1. Install PHP-5.5 and mcrypt PHP Extension
+2. Install `Composer` dependency manager `php -r "readfile('https://getcomposer.org/installer');" | php`
+2. Manually install Laravel with `composer global require "laravel/installer=~1.1"`
+3. `laravel new new-app` to create new app
+4. Update `config/database.php` for default database to `'default' => 'mysql'`
 
-The Laravel `CACHE_DRIVER` is set to use [APC opcode caching](http://php.net/manual/en/book.apc.php)
-and the `SESSION_DRIVER` is set to use the local file system for storage. Feel 
-free to update these settings in `.openshift/.env`.
+From this initial state you can:
+* create new Laravel apps
+* remove the `new-app` app
+* rename the Laravel project
+* update settings to suit your needs
+* install more PHP libraries by adding them to the `composer.json` file
 
-### Laravel Migrations ###
-When the application is pushed to OpenShift, `php artisan migrate --force` is automatically executed.
 
-### Composer ###
-When the application is pushed, `composer install` is automatically executed over the root directory. See [PHP Markers](https://developers.openshift.com/en/php-markers.html) for more details on the 'use_composer' marker.
+## Local development
 
-### 'Development' Mode ###
-When you develop your Laravel application in OpenShift, you can also enable the
-'development' environment by setting the `APPLICATION_ENV` environment variable,
-using the `rhc` client, like:
+To run this project in your development machine, follow these steps:
+
+1. Fork this repo and clone your fork:
+
+    `git clone https://github.com/openshift/laravel-ex.git`
+
+2. Install Apache, PHP-5.5 and mcrypt PHP Extension
+
+3. Install `Composer` dependency manager `php -r "readfile('https://getcomposer.org/installer');" | php`
+
+3. Install dependencies via composer:
+
+    `./composer.phar install --no-interaction --no-ansi --no-scripts --optimize-autoloader`
+
+4. Create a development database:
+
+    `php artisan migrate`
+
+4. If everything is alright, you should be able to start Apache web server to start serving requests:
+
+    `exec httpd -D FOREGROUND`
+
+5. Open your browser and go to http://127.0.0.1:8000, you will be greeted with a welcome page.
+
+
+## Deploying to OpenShift
+
+To follow the next steps, you need to be logged into an OpenShift cluster and have an OpenShift project where you can work on.
+
+
+### Using an application template
+
+The directory `openshift/` contains OpenShift application template files that you can add you your OpenShift project with:
+
+    osc create -f openshift/<TEMPLATE_NAME>.json
+
+The template `laravel-source.json` contains just a minimal set of components to get your Laravel application into OpenShift.
+
+The template `laravel-source-postgresql.json` contains all of the components from `laravel-source.json`, plus a MySQL database service and an Image Stream for the PHP base image.
+
+After adding your templates, you can go to your OpenShift web console, browse to your project and click the create button. Create a new app from one of the templates that you have just added.
+
+Adjust the parameter values to suit your configuration. Most times you can just accept the default values, however you will probably want to set the `GIT_REPOSITORY` parameter to point to your fork and the `DATABASE_*` parameters to match your database configuration.
+
+Alternatively, you can use the command line to create your new app:
+
+    osc new-app --template=<TEMPLATE_NAME> --param=GIT_REPOSITORY=...,...
+
+Your application will be built and deployed automatically. If that doesn't happen, you can debug your build:
+
+    osc get builds
+    # take build name from the command above
+    osc build-logs <build-name>
+
+And you can see information about your deployment too:
+
+    osc describe dc/laravel
+
+In the web console, the overview tab shows you a service, by default called "laravel", that encapsulates all pods running your laravel application. You can access your application by browsing to the service's IP address and port.
+
+
+### Without an application template
+
+Templates give you full control of each component of your application.
+Sometimes your application is simple enough and you don't want to bother with templates. In that case, you can let OpenShift inspect your source code and create the required components automatically for you:
+
+```bash
+$ osc new-app openshift/php-55-centos7~https://github.com/openshift/laravel-ex
+imageStreams/php-55-centos7
+imageStreams/laravel-ex
+buildConfigs/laravel-ex
+deploymentConfigs/laravel-ex
+services/laravel-ex
+A build was created - you can run `osc start-build laravel-ex` to start it.
+Service "laravel-ex" created at 172.30.16.213 with port mappings 8080.
+```
+
+You can access your application by browsing to the service's IP address and port.
+
+
+## Special files in this repository
+
+Apart from the regular files created by Laravel (`app/*`, `bootstrap/*`, `config/*`), this repository contains:
 
 ```
-$ rhc env set APPLICATION_ENV=development -a <app-name>
+.sti/
+└── bin/           - scripts used by source-to-image
+    ├── assemble   - executed to produce a Docker image with your code and dependencies during build
+    └── run        - executed to start your app during deployment
+
+openshift/         - application templates for OpenShift
+
+.htaccees          - directory-level configuration file for Apache web server
+
+composer.json      - list of dependencies
 ```
 
-Then, restart your application:
 
-```
-$ rhc app restart -a <app-name>
-```
+## Data persistence
 
-If you do so, OpenShift will run your application under 'development' mode.
-In development mode, your application will:
+You can deploy this application without a configured database in your OpenShift project, in which case Django will use a temporary SQLite database that will live inside your application's container, and persist only until you redeploy your application.
 
-* Set Laravel's `APP_ENV` to 'development' and `APP_DEBUG` to 'true'
-* Ignore your composer.lock file
-* Show more detailed errors in browser
-* Display startup errors
-* Enable the [Xdebug PECL extension](http://xdebug.org/)
-* Enable [APC stat check](http://php.net/manual/en/apc.configuration.php#ini.apc.stat)
+After each deploy you get a fresh, empty, SQLite database. That is fine for a first contact with OpenShift and perhaps Django, but sooner or later you will want to persist your data across deployments.
 
-Set the variable to 'production' and restart your app to deactivate error reporting 
-and resume production PHP settings.
+To do that, you should add a properly configured database server or ask your OpenShift administrator to add one for you. Then use `osc env` to update the `DATABASE_*` environment variables in your DeploymentConfig to match your database settings.
 
-Using the development environment can help you debug problems in your application
-in the same way as you do when developing on your local machine. However, we strongly 
-advise you not to run your application in this mode in production.
+Redeploy your application to have your changes applied, and open the welcome page again to make sure your application is successfully connected to the database server.
 
-### Log Files ###
-Your application is configured to use the OpenShift log directory. You can use the 
-`rhc tail` command to stream the latest log file entries:
 
-```
-rhc tail -a <APP_NAME>
-```
+## Looking for help
 
-To stop tailing the logs, press *Ctrl + c*.
+If you get stuck at some point, or think that this document needs further details or clarification, you can give feedback and look for help using the channels mentioned in [the OpenShift Origin repo](https://github.com/openshift/origin), or by filling an issue.
 
-## Manual Installation ##
 
-1. Create an account at https://www.openshift.com/
+## License
 
-1. Create a Laravel application:
-
-    ```
-    rhc app create laravelapp php-5.4 mysql-5.5 --from-code=https://github.com/luciddreamz/laravel
-    ```
-    or
-
-    ```
-    rhc app create laravelapp php-5.4 postgresql-9.2 --from-code=https://github.com/luciddreamz/laravel
-    ```
-
-## Additional Resources ##
-Documentation for the Laravel framework can be found on the [Laravel website](http://laravel.com/docs). Check 
-out OpenShift's [Developer Portal](https://developers.openshift.com/en/php-overview.html) for help running PHP on OpenShift.
+This code is dedicated to the public domain to the maximum extent permitted by applicable law, pursuant to [CC0](http://creativecommons.org/publicdomain/zero/1.0/).

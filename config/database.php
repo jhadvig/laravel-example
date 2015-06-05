@@ -41,20 +41,16 @@ return [
 	| All database work in Laravel is done through the PHP PDO facilities
 	| so make sure you have the driver for your particular database of
 	| choice installed on your machine before you begin development.
-	|
-	| OpenShift Notes:
-	|   MySQL:      https://developers.openshift.com/en/databases-mysql.html
-	|   PostgreSQL: https://developers.openshift.com/en/databases-postgresql.html
 	*/
 
 	'connections' => [
 		'mysql' => [
 			'driver'    => 'mysql',
-			'host'      => env('DATABASE_SERVICE_HOST', '172.17.42.1'),
-			'port'      => env('DATABASE_SERVICE_PORT', 3306),
-			'database'  => env('DATABASE_NAME', 'db'),
-			'username'  => env('DATABASE_USER', 'user'),
-			'password'  => env('DATABASE_PASSWORD', 'pass'),
+			'host'      => env('DATABASE_SERVICE_HOST'),
+			'port'      => env('DATABASE_SERVICE_PORT'),
+			'database'  => env('DATABASE_NAME'),
+			'username'  => env('DATABASE_USER'),
+			'password'  => env('DATABASE_PASSWORD'),
 			'charset'   => 'utf8',
 			'collation' => 'utf8_unicode_ci',
 			'prefix'    => '',
@@ -83,10 +79,6 @@ return [
 	| Redis is an open source, fast, and advanced key-value store that also
 	| provides a richer set of commands than a typical key-value systems
 	| such as APC or Memcached. Laravel makes it easy to dig right in.
-	|
-	| OpenShift Notes: 
-	|   Redis:       https://hub.openshift.com/addons/34-redis
-	|   Redis Cloud: https://hub.openshift.com/addons/17-rediscloud
 	|
 	*/
 

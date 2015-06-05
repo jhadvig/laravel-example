@@ -11,9 +11,13 @@
 |
 */
 
-Route::get('/', [
-    'as' => 'home',
-    'uses' => 'PagesController@home'
-]);
+Route::get('/', 'WelcomeController@index');
+
+Route::get('home','PagesController@home');
+
+// Route::get('/', [
+//     'as' => 'home',
+//     'uses' => 'PagesController@home'
+// ]);
 
 Route::resource('tasks', 'TasksController');
